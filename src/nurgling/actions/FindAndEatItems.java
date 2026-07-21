@@ -34,34 +34,33 @@ public class FindAndEatItems implements Action
            cnt.addInItem(item, null);
         }
 
-//        for(String item: items) {
-//            for (Context.Input input : cnt.getInputs(item)) {
-//                if (input instanceof Context.InputPile) {
-//                    takeFromPile(gui, (Context.InputPile) input);
-//                } else if (input instanceof Context.InputContainer) {
-//                    takeFromContainer(gui, (Context.InputContainer) input);
-//                }
-//                if(!calcCalories())
-//                    break;
-//            }
-//            if(!calcCalories())
-//                break;
-//        }
+        if (area != null) {
+            for (Gob pile : Finder.findGobs(area, new NAlias("stockpile"))) {
+                if (!calcCalories())
+                    break;
+                takeFromPile(gui, pile);
+            }
+            for (Gob contgob : Finder.findGobs(area, new NAlias(new ArrayList<>(NContext.contcaps.keySet()), new ArrayList<>()))) {
+                if (!calcCalories())
+                    break;
+                takeFromContainer(gui, contgob);
+            }
+        }
         eatAll(gui);
         return Results.SUCCESS();
     }
 
-    public Results takeFromPile(NGameUI gui, Context.InputPile pile) throws InterruptedException
+    public Results takeFromPile(NGameUI gui, Gob pile) throws InterruptedException
     {
-        new PathFinder(pile.pile).run(gui);
-        new OpenTargetContainer("Stockpile",  pile.pile).run(gui);
+        new PathFinder(pile).run(gui);
+        new OpenTargetContainer("Stockpile",  pile).run(gui);
         while (calcCalories()) {
             if(gui.getInventory().getNumberFreeCoord(new Coord(1,1))==0)
             {
                 eatAll(gui);
             }
             TakeItemsFromPile tifp;
-            (tifp = new TakeItemsFromPile(pile.pile, gui.getStockpile(), 1)).run(gui);
+            (tifp = new TakeItemsFromPile(pile, gui.getStockpile(), 1)).run(gui);
             if(tifp.getResult() == 0)
                 break;
         }
@@ -69,9 +68,10 @@ public class FindAndEatItems implements Action
         return Results.SUCCESS();
     }
 
-    public Results takeFromContainer(NGameUI gui, Container cont) throws InterruptedException
+    public Results takeFromContainer(NGameUI gui, Gob contgob) throws InterruptedException
     {
-        new PathFinder(Finder.findGob(cont.gobid)).run(gui);
+        Container cont = new Container(contgob, NContext.contcaps.get(contgob.ngob.name), null);
+        new PathFinder(contgob).run(gui);
         new OpenTargetContainer(cont).run(gui);
         while (calcCalories()) {
             if(gui.getInventory().getNumberFreeCoord(new Coord(1,1))==0)
@@ -86,7 +86,7 @@ public class FindAndEatItems implements Action
             gui.ui.core.addTask(new WaitItems(NUtils.getGameUI().getInventory(), new NAlias(items), oldSize + 1));
         }
 
-        new CloseTargetWindow(NUtils.getGameUI().getWindow("Stockpile")).run(gui);
+        new CloseTargetContainer(cont).run(gui);
         return Results.SUCCESS();
     }
 

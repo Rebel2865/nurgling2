@@ -30,22 +30,23 @@ public class Eater implements Action {
     public Results run(NGameUI gui) throws InterruptedException {
         ArrayList<String> items = FoodContainer.getFoodNames();
 
-        Pair<Coord2d,Coord2d> area = null;
+        // First try local area
         NArea nArea = NContext.findSpec(Specialisation.SpecName.eat.toString());
-        if(nArea==null)
-        {
+        if (nArea == null) {
+            // Try global area
             nArea = NContext.findSpecGlobal(Specialisation.SpecName.eat.toString());
         }
-        else
-        {
-            area = nArea.getRCArea();
-        }
-        if(area!=null) {
-            NContext cnt = new NContext(gui);
-            new FindAndEatItems(cnt, items, 8000, area).run(gui);
-            return NUtils.getEnergy()*10000>8000?Results.SUCCESS():Results.FAIL();
-        }
-        else
+
+        if (nArea == null) {
             return Results.FAIL();
+        }
+
+        // Navigate to the area using chunk navigation
+        NUtils.navigateToArea(nArea);
+        Pair<Coord2d,Coord2d> area = nArea.getRCArea();
+
+        NContext cnt = new NContext(gui);
+        new FindAndEatItems(cnt, items, 8000, area).run(gui);
+        return NUtils.getEnergy()*10000>8000?Results.SUCCESS():Results.FAIL();
     }
 }
