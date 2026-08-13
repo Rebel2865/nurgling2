@@ -427,8 +427,8 @@ public class VSpec {
 
         // Crabapple Tree
         ArrayList<String> crabappleOp = new ArrayList<>();
-        crabappleOp.add("Crabapples"); // РџР»РѕРґС‹
-        crabappleOp.add("Yesteryear's Crabapples");
+        crabappleOp.add("Crabapple"); // РџР»РѕРґС‹
+        crabappleOp.add("Yesteryear's Crabapple");
         object.put("gfx/terobjs/trees/crabappletree", crabappleOp);
 
         // Dwarf Pine Tree
